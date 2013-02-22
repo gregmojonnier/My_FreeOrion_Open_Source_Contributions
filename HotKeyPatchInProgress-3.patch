@@ -1,0 +1,1718 @@
+Index: client/human/HumanClientFSM.cpp
+===================================================================
+--- client/human/HumanClientFSM.cpp	(revision 4639)
++++ client/human/HumanClientFSM.cpp	(working copy)
+@@ -12,6 +12,7 @@
+ #include "../../UI/IntroScreen.h"
+ #include "../../UI/MultiplayerLobbyWnd.h"
+ #include "../../UI/MapWnd.h"
++#include "../../UI/HotKeyManager.h"
+ 
+ #include <boost/format.hpp>
+ 
+@@ -67,6 +68,7 @@
+ IntroMenu::IntroMenu(my_context ctx) :
+     Base(ctx)
+ {
++    HotKeyManager::Instance()->DeactivateHotKeys();
+     if (TRACE_EXECUTION) Logger().debugStream() << "(HumanClientFSM) IntroMenu";
+     if (GetOptionsDB().Get<bool>("tech-demo"))
+         Client().Register(Client().m_ui->GetCombatWnd());
+@@ -349,7 +351,11 @@
+ ////////////////////////////////////////////////////////////
+ PlayingGame::PlayingGame() :
+     Base()
+-{ if (TRACE_EXECUTION) Logger().debugStream() << "(HumanClientFSM) PlayingGame"; }
++{ 
++    HotKeyManager::Instance()->ActivateHotKeys();
++    if (TRACE_EXECUTION) 
++        Logger().debugStream() << "(HumanClientFSM) PlayingGame"; 
++}
+ 
+ PlayingGame::~PlayingGame()
+ {
+Index: default/eng_stringtable.txt
+===================================================================
+--- default/eng_stringtable.txt	(revision 4639)
++++ default/eng_stringtable.txt	(working copy)
+@@ -1257,6 +1257,12 @@
+ OPTIONS_MISC_UI
+ Miscellaneous UI Settings
+ 
++OPTIONS_BINDINGS
++Hot Key Bindings
++
++OPTIONS_DEFAULT_BINDINGS
++Use all of the default key bindings.
++
+ OPTIONS_SINGLEPLAYER
+ Single player
+ 
+@@ -1593,6 +1599,9 @@
+ OPTIONS_PAGE_UI
+ UI
+ 
++OPTIONS_PAGE_HOTKEY
++Hot Keys
++
+ OPTIONS_PAGE_COLORS
+ Colors
+ 
+@@ -1668,6 +1677,78 @@
+ OPTIONS_VERBOSE_SITREP_DESC
+ Situation reports with errors
+ 
++OPTIONS_HK_RETURN_TO_MAP
++Return to map
++
++OPTIONS_HK_OPEN_CHAT_1
++Open Chat Window 1
++
++OPTIONS_HK_OPEN_CHAT_2
++Open Chat Window 2
++
++OPTIONS_HK_END_TURN_1
++End Turn 1
++
++OPTIONS_HK_END_TURN_2
++End Turn 2
++
++OPTIONS_HK_TOGGLE_SITREP
++Toggle Situation Report
++
++OPTIONS_HK_TOGGLE_RESEARCH_WND
++Toggle Research Window
++
++OPTIONS_HK_TOGGLE_PRODUCTION_WND
++Toggle Production Window
++
++OPTIONS_HK_TOGGLE_DESIGN_WND
++Toggle Design Window
++
++OPTIONS_HK_SHOW_MENU
++Show Menu
++
++OPTIONS_HK_CLOSE_SYSTEM_VIEW
++Close System View
++
++OPTIONS_HK_KEYBOARD_ZOOMIN_1
++Keyboard Zoom In 1
++
++OPTIONS_HK_KEYBOARD_ZOOMIN_2
++Keyboard Zoom In 2
++
++OPTIONS_HK_KEYBOARD_ZOOMOUT_1
++Keyboard Zoom Out 1
++
++OPTIONS_HK_KEYBOARD_ZOOMOUT_2
++Keyboard Zoom Out 2
++
++OPTIONS_HK_ZOOM_TO_HOMESYS
++Zoom To Home System
++
++OPTIONS_HK_ZOOM_TO_PREV_OWNEDSYS
++Zoom To Previously Owned System
++
++OPTIONS_HK_ZOOM_TO_NEXT_OWNEDSYS
++Zoom To Next Owned System
++
++OPTIONS_HK_ZOOM_TO_PREV_IDLE_FLEET
++Zoom To Previously Idle Fleet
++
++OPTIONS_HK_ZOOM_TO_NEXT_IDLE_FLEET
++Zoom To Next Idle Fleet
++
++OPTIONS_HK_ZOOM_TO_PREV_FLEET
++Zoom To Previous Fleet
++
++OPTIONS_HK_ZOOM_TO_NEXT_FLEET
++Zoom To Next Fleet
++
++OPTIONS_HK_RESET_ALL
++Reset All
++
++OPTIONS_HK_MODAL_WND
++Press the key combination that you would like to set now.\nIf you no longer wish to modify this hot key just move the\ncursor off of this window.
++
+ ##################
+ # CombatSetupWnd #
+ ##################
+@@ -6780,3 +6861,93 @@
+ Large Juggernaut Body
+ SH_JUGGERNAUT_3_BODY_DESC
+ A formidible heavy-weight space monster.
++
++
++###########################
++# KeyBoard Key Strings    #
++###########################
++
++Left_Arrow
++Left Arrow
++
++Right_Arrow
++Right Arrow
++
++Up_Arrow
++Up Arrow
++
++Down_Arrow
++Down Arrow
++
++F1
++F1
++
++F2
++F2
++
++F3
++F3
++
++F4
++F4
++
++F5
++F5
++
++F6
++F6
++
++F7
++F7
++
++F8
++F8
++
++F9
++F9
++
++F10
++F10
++
++F11
++F11
++
++F12
++F12
++
++Space
++Space
++
++Backspace
++Backspace
++
++Enter
++Enter
++
++Return
++Return
++
++Tab
++Tab
++
++Insert
++Insert
++
++Delete
++Delete
++
++Home
++Home
++
++End
++End
++
++Page_Up
++Page Up
++
++Page_Down
++Page Down
++
++Escape
++Escape
++
+Index: msvc2010/FreeOrion/FreeOrion.vcxproj
+===================================================================
+--- msvc2010/FreeOrion/FreeOrion.vcxproj	(revision 4639)
++++ msvc2010/FreeOrion/FreeOrion.vcxproj	(working copy)
+@@ -149,6 +149,7 @@
+     <ClInclude Include="..\..\UI\FleetWnd.h" />
+     <ClInclude Include="..\..\UI\GalaxySetupWnd.h" />
+     <ClInclude Include="..\..\UI\GLClientAndServerBuffer.h" />
++    <ClInclude Include="..\..\UI\HotKeyManager.h" />
+     <ClInclude Include="..\..\UI\InfoPanels.h" />
+     <ClInclude Include="..\..\UI\InGameMenu.h" />
+     <ClInclude Include="..\..\UI\IntroScreen.h" />
+@@ -260,6 +261,7 @@
+     <ClCompile Include="..\..\UI\FleetWnd.cpp" />
+     <ClCompile Include="..\..\UI\GalaxySetupWnd.cpp" />
+     <ClCompile Include="..\..\UI\GLClientAndServerBuffer.cpp" />
++    <ClCompile Include="..\..\UI\HotKeyManager.cpp" />
+     <ClCompile Include="..\..\UI\InfoPanels.cpp" />
+     <ClCompile Include="..\..\UI\InGameMenu.cpp" />
+     <ClCompile Include="..\..\UI\IntroScreen.cpp" />
+Index: msvc2010/FreeOrion/FreeOrion.vcxproj.filters
+===================================================================
+--- msvc2010/FreeOrion/FreeOrion.vcxproj.filters	(revision 4639)
++++ msvc2010/FreeOrion/FreeOrion.vcxproj.filters	(working copy)
+@@ -19,12 +19,6 @@
+     <Filter Include="Header Files\client\human">
+       <UniqueIdentifier>{d2ae9498-3cb1-4223-b055-39f924d909ba}</UniqueIdentifier>
+     </Filter>
+-    <Filter Include="Header Files\combat">
+-      <UniqueIdentifier>{e1903fa4-66a8-4377-9d91-eb60de6ced9a}</UniqueIdentifier>
+-    </Filter>
+-    <Filter Include="Header Files\combat\OpenSteer">
+-      <UniqueIdentifier>{330825c5-e4d2-4169-ad50-d5ff8744eedb}</UniqueIdentifier>
+-    </Filter>
+     <Filter Include="Header Files\Empire">
+       <UniqueIdentifier>{3cc43ce0-b6b4-416a-80a0-949870380ee1}</UniqueIdentifier>
+     </Filter>
+@@ -61,6 +55,12 @@
+     <Filter Include="Source Files\UI\PagedGeometry">
+       <UniqueIdentifier>{dce0428f-3d99-47ce-ab4d-52d1490873b8}</UniqueIdentifier>
+     </Filter>
++    <Filter Include="Header Files\client\combat">
++      <UniqueIdentifier>{e1903fa4-66a8-4377-9d91-eb60de6ced9a}</UniqueIdentifier>
++    </Filter>
++    <Filter Include="Header Files\client\combat\OpenSteer">
++      <UniqueIdentifier>{330825c5-e4d2-4169-ad50-d5ff8744eedb}</UniqueIdentifier>
++    </Filter>
+   </ItemGroup>
+   <ItemGroup>
+     <ClInclude Include="..\..\client\ClientApp.h">
+@@ -79,64 +79,64 @@
+       <Filter>Header Files\client\human</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\UnusedParameter.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Utilities.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Vec3.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Vec3Utilities.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\AbstractVehicle.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\AsteroidBeltObstacle.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\CombatFighter.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\CombatObject.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\CombatShip.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\LocalSpace.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Missile.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Obstacle.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\PathingEngine.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\PathingEngineFwd.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\Proximity.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\ProximityDatabase.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\SimpleVehicle.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\StandardTypes.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\OpenSteer\SteerLibrary.h">
+-      <Filter>Header Files\combat\OpenSteer</Filter>
++      <Filter>Header Files\client\combat\OpenSteer</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\combat\CombatOrder.h">
+-      <Filter>Header Files\combat</Filter>
++      <Filter>Header Files\client\combat</Filter>
+     </ClInclude>
+     <ClInclude Include="..\..\Empire\EmpireManager.h">
+       <Filter>Header Files\Empire</Filter>
+@@ -465,6 +465,9 @@
+     <ClInclude Include="..\..\universe\Names.h">
+       <Filter>Header Files\universe</Filter>
+     </ClInclude>
++    <ClInclude Include="..\..\UI\HotKeyManager.h">
++      <Filter>Header Files\UI</Filter>
++    </ClInclude>
+   </ItemGroup>
+   <ItemGroup>
+     <None Include="..\..\FreeOrion.ico">
+@@ -658,6 +661,9 @@
+     <ClCompile Include="..\..\util\VarText.cpp">
+       <Filter>Source Files\util</Filter>
+     </ClCompile>
++    <ClCompile Include="..\..\UI\HotKeyManager.cpp">
++      <Filter>Source Files\UI</Filter>
++    </ClCompile>
+   </ItemGroup>
+   <ItemGroup>
+     <ResourceCompile Include="FreeOrion.rc">
+Index: UI/ChatWnd.cpp
+===================================================================
+--- UI/ChatWnd.cpp	(revision 4639)
++++ UI/ChatWnd.cpp	(working copy)
+@@ -14,6 +14,7 @@
+ #include "../universe/Building.h"
+ #include "../util/OptionsDB.h"
+ #include "../util/MultiplayerCommon.h"
++#include "../UI/HotKeyManager.h"
+ 
+ #include <boost/algorithm/string.hpp>
+ #include <GG/GUI.h>
+@@ -63,11 +64,13 @@
+ void MessageWndEdit::GainingFocus() {
+     GG::Edit::GainingFocus();
+     GainingFocusSignal();
++    HotKeyManager::Instance()->DeactivateHotKeys();
+ }
+ 
+ void MessageWndEdit::LosingFocus() {
+     GG::Edit::LosingFocus();
+     LosingFocusSignal();
++    HotKeyManager::Instance()->ActivateHotKeys();
+ }
+ 
+ void MessageWndEdit::KeyPress(GG::Key key, boost::uint32_t key_code_point,
+Index: UI/HotKeyManager.cpp
+===================================================================
+--- UI/HotKeyManager.cpp	(revision 0)
++++ UI/HotKeyManager.cpp	(revision 0)
+@@ -0,0 +1,672 @@
++#include "HotKeyManager.h"
++
++#include "../util/OptionsDB.h"
++#include <iostream>
++#include <boost/algorithm/string.hpp>
++#include "../../../FreeOrion/GG/GG/Edit.h"
++#include "../util/MultiplayerCommon.h"
++
++
++HotKeyManager::HotKeyManager() : m_map_window_ptr_set(false)
++{
++
++}
++/////////////////////////////////////////////////
++// HotKeyManager                               //
++/////////////////////////////////////////////////
++// static(s)
++HotKeyManager* HotKeyManager::s_instance = nullptr;
++
++
++HotKeyManager* HotKeyManager::Instance()
++{
++    if (!s_instance)   // Only allow one instance of class to be generated.
++      s_instance = new HotKeyManager();
++   return s_instance;
++}
++
++void HotKeyManager::SetHotKeyAccelerator(const std::string& hot_key_name)
++{
++    HotKeyCombination hot_key_combo = ReadHotKeyFromDB(hot_key_name);
++    GG::GUI::GetGUI()->SetAccelerator(hot_key_combo.m_key, hot_key_combo.m_default_modkeys);
++
++}
++
++void HotKeyManager::ChangeHotKey(const std::string& hot_key_name, const GG::Key& key, const GG::Flags<GG::ModKey>& default_modkeys, const boost::uint32_t& key_code_point)
++{
++     HotKeyCombination hot_key_combo(hot_key_name, key, default_modkeys, key_code_point);
++     WriteHotKeyComboToDB(hot_key_combo);
++     RemoveAccelerators();
++
++    // needed for connecting signals
++    if (m_map_window_ptr_set)
++    {
++       SetAccelerators();
++       ConnectKeyboardAcceleratorSignals(m_map_window);
++    }
++}
++
++
++GG::GUI::AcceleratorSignalType& HotKeyManager::GetHotKeySignal(const std::string& hot_key_name)
++{
++    HotKeyCombination hot_key_combo = ReadHotKeyFromDB(hot_key_name);
++    return GG::GUI::GetGUI()->AcceleratorSignal(hot_key_combo.m_key, hot_key_combo.m_default_modkeys);
++}
++
++void HotKeyManager::ConnectKeyboardAcceleratorSignals(MapWnd* map_window)
++{
++
++       m_map_window = map_window;
++       m_map_window_ptr_set = true;
++
++       std::map<std::string, std::string>::const_iterator it;
++       std::string state = "Default";
++
++       if ( (it = hot_keys_to_states.find("HotKey.ReturnToMap")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++       m_keyboard_accelerator_signals.push_back(std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ReturnToMap"), &MapWnd::ReturnToMap, map_window), state)); 
++
++       if ( (it = hot_keys_to_states.find("HotKey.OpenChatWindow1")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.OpenChatWindow1"),
++                    &MapWnd::OpenChatWindow, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.OpenChatWindow2")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.OpenChatWindow2"),
++                    &MapWnd::OpenChatWindow, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.EndTurn1")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.EndTurn1"),
++                    &MapWnd::EndTurn, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.EndTurn2")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.EndTurn2"),
++                    &MapWnd::EndTurn, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ToggleSitRep")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ToggleSitRep"),
++                    &MapWnd::ToggleSitRep, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ToggleResearch")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ToggleResearch"),
++                    &MapWnd::ToggleResearch, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ToggleProduction")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ToggleProduction"),
++                    &MapWnd::ToggleProduction, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ToggleDesign")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ToggleDesign"),
++                    &MapWnd::ToggleDesign, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ShowMenu")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ShowMenu"),
++                    &MapWnd::ShowMenu, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.CloseSystemView")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.CloseSystemView"),
++                    &MapWnd::CloseSystemView, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.KeyboardZoomIn1")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    // Keys for zooming
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.KeyboardZoomIn1"),
++                    &MapWnd::KeyboardZoomIn, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.KeyboardZoomIn2")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.KeyboardZoomIn2"),
++                    &MapWnd::KeyboardZoomIn, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.KeyboardZoomOut1")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.KeyboardZoomOut1"),
++                    &MapWnd::KeyboardZoomOut, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.KeyboardZoomOut2")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.KeyboardZoomOut2"),
++                    &MapWnd::KeyboardZoomOut, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToHomeSystem")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    // Keys for showing systems
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToHomeSystem"),
++                    &MapWnd::ZoomToHomeSystem, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToPrevOwnedSystem")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToPrevOwnedSystem"),
++                    &MapWnd::ZoomToPrevOwnedSystem, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToNextOwnedSystem")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToNextOwnedSystem"),
++                    &MapWnd::ZoomToNextOwnedSystem, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToPrevIdleFleet")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    // Keys for showing fleets
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToPrevIdleFleet"),
++                    &MapWnd::ZoomToPrevIdleFleet, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToNextIdleFleet")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToNextIdleFleet"),
++                    &MapWnd::ZoomToNextIdleFleet, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToPrevFleet")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToPrevFleet"),
++                    &MapWnd::ZoomToPrevFleet, map_window), state));
++
++       if ( (it = hot_keys_to_states.find("HotKey.ZoomToNextFleet")) == hot_keys_to_states.end() ) {
++	state = "Default";
++       }
++       else {
++	state = it->second;
++       }
++    m_keyboard_accelerator_signals.push_back(
++        std::make_pair(GG::Connect(s_instance->GetHotKeySignal("HotKey.ZoomToNextFleet"),
++                    &MapWnd::ZoomToNextFleet, map_window), state));
++// set up the regression hotkey
++}
++
++void HotKeyManager::SetAccelerators()
++{
++    HotKeyToString("HotKey.ReturnToMap");
++    SetHotKeyAccelerator("HotKey.ReturnToMap");
++    SetHotKeyAccelerator("HotKey.OpenChatWindow1");
++    SetHotKeyAccelerator("HotKey.OpenChatWindow2");
++    SetHotKeyAccelerator("HotKey.EndTurn1");
++    SetHotKeyAccelerator("HotKey.EndTurn2");
++    SetHotKeyAccelerator("HotKey.ToggleSitRep");
++    SetHotKeyAccelerator("HotKey.ToggleResearch");
++    SetHotKeyAccelerator("HotKey.ToggleProduction");
++    SetHotKeyAccelerator("HotKey.ToggleDesign");
++    SetHotKeyAccelerator("HotKey.ShowMenu");
++    SetHotKeyAccelerator("HotKey.CloseSystemView");
++    SetHotKeyAccelerator("HotKey.KeyboardZoomIn1");
++    SetHotKeyAccelerator("HotKey.KeyboardZoomIn2");
++    SetHotKeyAccelerator("HotKey.KeyboardZoomOut1");
++    SetHotKeyAccelerator("HotKey.KeyboardZoomOut2");
++    SetHotKeyAccelerator("HotKey.ZoomToHomeSystem");
++    SetHotKeyAccelerator("HotKey.ZoomToPrevOwnedSystem");
++    SetHotKeyAccelerator("HotKey.ZoomToNextOwnedSystem");
++    SetHotKeyAccelerator("HotKey.ZoomToPrevIdleFleet");
++    SetHotKeyAccelerator("HotKey.ZoomToNextIdleFleet");
++    SetHotKeyAccelerator("HotKey.ZoomToPrevFleet");
++    SetHotKeyAccelerator("HotKey.ZoomToNextFleet");
++}
++
++
++void HotKeyManager::RemoveAccelerators()
++{
++    GG::GUI::accel_iterator i = GG::GUI::GetGUI()->accel_begin();
++    while (i != GG::GUI::GetGUI()->accel_end()) {
++        GG::GUI::GetGUI()->RemoveAccelerator(i);
++        i = GG::GUI::GetGUI()->accel_begin();
++    }
++
++
++    for (std::vector<std::pair<boost::signals::connection, std::string>>::iterator it =
++             m_keyboard_accelerator_signals.begin();
++         it != m_keyboard_accelerator_signals.end();
++         ++it) {
++        it->first.disconnect();
++    }
++    m_keyboard_accelerator_signals.clear();
++
++}
++
++void HotKeyManager::ActivateHotKeys(const std::string state_to_activate) 
++{
++    for (unsigned int i = 0; i < m_keyboard_accelerator_signals.size(); ++i ) 
++    {
++	    if ( m_keyboard_accelerator_signals[i].second == state_to_activate ) {
++		    m_keyboard_accelerator_signals[i].first.unblock();
++	    }
++    }
++}
++
++void HotKeyManager::DeactivateHotKeys(const std::string state_to_deactivate)
++{
++    for (unsigned int i = 0; i < m_keyboard_accelerator_signals.size(); ++i ) 
++    {
++	    if ( m_keyboard_accelerator_signals[i].second == state_to_deactivate ) {
++	           m_keyboard_accelerator_signals[i].first.block();  
++	    }
++    }
++}
++
++std::string HotKeyManager::HotKeyToString(const std::string& hot_key_name)
++{
++    HotKeyCombination hot_key_combo = ReadHotKeyFromDB(hot_key_name);
++
++    std::string full_hot_key_string;
++    std::string translated_code_point_key;
++
++    GG::GetTranslatedCodePoint(hot_key_combo.m_key, hot_key_combo.m_key_code_point, hot_key_combo.m_default_modkeys, translated_code_point_key);
++
++    if (translated_code_point_key == "")
++        full_hot_key_string = SpecialHotKeyToString(hot_key_combo, false);
++    else
++        full_hot_key_string += SpecialHotKeyToString(hot_key_combo, true) + translated_code_point_key;
++
++
++    return full_hot_key_string;
++}
++
++// arrows
++// fkeys
++// modkeys
++// spacebar
++// tab
++// enter/return
++// backspace
++// insert/delete/home/end/pageup/pagedown
++
++std::string HotKeyManager::SpecialHotKeyToString(const HotKeyCombination& hot_key_combo, bool only_check_modkeys)
++{
++    std::string hot_key_string;
++
++      // check modkeys
++    GG::Flags<GG::ModKey> modkeys = hot_key_combo.m_default_modkeys;
++      
++    if (modkeys & GG::MOD_KEY_CTRL) {
++        hot_key_string += "CTRL ";
++    } 
++    if(modkeys & GG::MOD_KEY_SHIFT) {
++        hot_key_string += "SHIFT ";
++    }
++    if (modkeys & GG::MOD_KEY_ALT) {
++        hot_key_string += "ALT ";
++    }
++    if (modkeys & GG::MOD_KEY_META) {
++        hot_key_string += "META ";
++    }
++    if (modkeys & GG::MOD_KEY_NUM) {
++        hot_key_string += "NUM LOCK ";
++    }
++    if (modkeys & GG::MOD_KEY_CAPS) {
++        hot_key_string += "CAPS LOCK ";
++    }
++    if (modkeys & GG::MOD_KEY_MODE) {
++        hot_key_string += "MODE ";
++    }
++
++
++    if (!only_check_modkeys) {
++
++        std::string hot_key_string_tag;
++
++        switch(hot_key_combo.m_key) {
++            case GG::GGK_LEFT: hot_key_string_tag = "Left_Arrow"; break;
++            case GG::GGK_RIGHT: hot_key_string_tag = "Right_Arrow"; break;
++            case GG::GGK_UP: hot_key_string_tag = "Up_Arrow"; break;
++            case GG::GGK_DOWN: hot_key_string_tag = "Down_Arrow"; break;
++            case GG::GGK_F1: hot_key_string_tag = "F1"; break;
++            case GG::GGK_F2: hot_key_string_tag = "F2"; break;
++            case GG::GGK_F3: hot_key_string_tag = "F3"; break;
++            case GG::GGK_F4: hot_key_string_tag = "F4"; break;
++            case GG::GGK_F5: hot_key_string_tag = "F5"; break;
++            case GG::GGK_F6: hot_key_string_tag = "F6"; break;
++            case GG::GGK_F7: hot_key_string_tag = "F7"; break;
++            case GG::GGK_F8: hot_key_string_tag = "F8"; break;
++            case GG::GGK_F9: hot_key_string_tag = "F9"; break;
++            case GG::GGK_F10: hot_key_string_tag = "F10"; break;
++            case GG::GGK_F11: hot_key_string_tag = "F11"; break;
++            case GG::GGK_F12: hot_key_string_tag = "F12"; break;
++
++            case GG::GGK_SPACE: hot_key_string_tag = "Space"; break;
++            case GG::GGK_TAB: hot_key_string_tag = "Tab"; break;
++            case GG::GGK_KP_ENTER: hot_key_string_tag = "Enter"; break;
++            case GG::GGK_RETURN: hot_key_string_tag = "Return"; break;
++            case GG::GGK_BACKSPACE: hot_key_string_tag = "Backspace"; break;
++            case GG::GGK_ESCAPE: hot_key_string_tag = "Escape"; break;    
++
++                // insert/delete/home/end/pageup/pagedown
++            case GG::GGK_INSERT: hot_key_string_tag = "Insert"; break;
++            case GG::GGK_DELETE: hot_key_string_tag = "Delete"; break;
++            case GG::GGK_HOME: hot_key_string_tag = "Home"; break;
++            case GG::GGK_END: hot_key_string_tag = "End"; break;
++            case GG::GGK_PAGEUP: hot_key_string_tag = "Page_Up"; break;
++            case GG::GGK_PAGEDOWN: hot_key_string_tag = "Page_Down"; break;
++            default: break;
++        }
++        if ( !(hot_key_string_tag == "") )
++            hot_key_string = UserString(hot_key_string_tag);
++    }
++
++
++    return hot_key_string;
++
++}
++
++
++
++
++HotKeyCombination HotKeyManager::ReadHotKeyFromDB(const std::string& hot_key_name)
++{
++    std::string db_stored_key = GetOptionsDB().Get<std::string>(hot_key_name);
++    std::string db_stored_state = GetOptionsDB().Get<std::string>(hot_key_name+".State");
++
++    hot_keys_to_states.insert( std::make_pair( hot_key_name, db_stored_state ) );
++
++    std::vector<std::string> split_strings;
++    boost::split(split_strings, db_stored_key, boost::is_any_of(" "));
++
++    GG::Key key = static_cast<GG::Key>(boost::lexical_cast<int>(split_strings.at(0)));
++    GG::Flags<GG::ModKey> modkeys;
++    boost::uint32_t key_code_point;
++
++    for (unsigned int x = 1; x < split_strings.size()-1; ++x)
++    {
++        std::string cur = split_strings.at(x);
++
++        if (cur == "c") {
++            modkeys |= GG::MOD_KEY_CTRL;
++        } else if(cur == "s") {
++            modkeys |= GG::MOD_KEY_SHIFT;
++        } else if (cur == "a") {
++            modkeys |= GG::MOD_KEY_ALT;
++        } else if (cur == "m") {
++            modkeys |= GG::MOD_KEY_META;
++        } else if(cur == "num") {
++            modkeys |= GG::MOD_KEY_NUM;
++        } else if (cur == "cap") {
++            modkeys |= GG::MOD_KEY_CAPS;
++        } else if (cur == "mode") {
++            modkeys |= GG::MOD_KEY_MODE;
++        }
++    }
++    
++    if ((split_strings.size() - 1) != 0)
++        key_code_point = boost::lexical_cast<boost::uint32_t>(split_strings.at(split_strings.size()-1));
++    else
++        key_code_point = 0;
++    
++    HotKeyCombination db_key_combo(hot_key_name, key, modkeys, key_code_point);
++
++    return db_key_combo;
++}
++
++
++void HotKeyManager::WriteHotKeyComboToDB(const HotKeyCombination& hot_key_combo)
++{
++    // store new keys combo
++    int key_int = static_cast<int>(hot_key_combo.m_key);
++    GG::Flags<GG::ModKey> default_modkeys = hot_key_combo.m_default_modkeys;
++    std::string hot_key_string = boost::lexical_cast<std::string>(key_int);
++
++    if (default_modkeys & GG::MOD_KEY_CTRL) {
++        hot_key_string += " c";
++    } 
++    if(default_modkeys & GG::MOD_KEY_SHIFT) {
++        hot_key_string += " s";
++    }
++    if (default_modkeys & GG::MOD_KEY_ALT) {
++        hot_key_string += " a";
++    }
++    if (default_modkeys & GG::MOD_KEY_META) {
++        hot_key_string += " m";
++    }
++    if (default_modkeys & GG::MOD_KEY_NUM) {
++        hot_key_string += " num";
++    }
++    if (default_modkeys & GG::MOD_KEY_CAPS) {
++        hot_key_string += " cap";
++    }
++
++    if (default_modkeys & GG::MOD_KEY_MODE) {
++        hot_key_string += " mode";
++    }
++
++
++
++
++
++    hot_key_string += " " + boost::lexical_cast<std::string>(hot_key_combo.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>(hot_key_combo.m_hot_key_name, hot_key_string);
++
++}
++
++
++// fix gui
++// add states
++// clean up code
++// cancel button
++
++bool HotKeyManager::IsModKey(const GG::Key& key)
++{
++    switch(key) {
++        case GG::GGK_NUMLOCK:
++        case GG::GGK_CAPSLOCK:
++        case GG::GGK_RSHIFT:
++        case GG::GGK_LSHIFT:
++        case GG::GGK_RCTRL:
++        case GG::GGK_LCTRL:
++        case GG::GGK_RALT:
++        case GG::GGK_LALT:
++        case GG::GGK_RMETA:
++        case GG::GGK_LMETA:
++        case GG::GGK_MODE:
++            return true;
++            break;
++        default:
++            return false;
++            break;
++    }
++}
++
++void HotKeyManager::ResetHotKeysToDefault()
++{
++    HotKeyCombination hot_key_combo_default;
++
++
++    // Set stored hot key combo in config.xml to default(original)
++    // Read newly set default hot key combo key from config.xml
++    // Change hot key so the newly set default is functional
++    GetOptionsDB().Set<std::string>("HotKey.ReturnToMap", GetOptionsDB().GetDefault<std::string>("HotKey.ReturnToMap"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ReturnToMap");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.OpenChatWindow1", GetOptionsDB().GetDefault<std::string>("HotKey.OpenChatWindow1"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.OpenChatWindow1");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.OpenChatWindow2", GetOptionsDB().GetDefault<std::string>("HotKey.OpenChatWindow2"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.OpenChatWindow2");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.EndTurn1", GetOptionsDB().GetDefault<std::string>("HotKey.EndTurn1"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.EndTurn1");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.EndTurn2", GetOptionsDB().GetDefault<std::string>("HotKey.EndTurn2"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.EndTurn2");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ToggleSitRep", GetOptionsDB().GetDefault<std::string>("HotKey.ToggleSitRep"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ToggleSitRep");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ToggleResearch", GetOptionsDB().GetDefault<std::string>("HotKey.ToggleResearch"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ToggleResearch");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ToggleProduction", GetOptionsDB().GetDefault<std::string>("HotKey.ToggleProduction"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ToggleProduction");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ToggleDesign", GetOptionsDB().GetDefault<std::string>("HotKey.ToggleDesign"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ToggleDesign");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ShowMenu", GetOptionsDB().GetDefault<std::string>("HotKey.ShowMenu"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ShowMenu");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.CloseSystemView", GetOptionsDB().GetDefault<std::string>("HotKey.CloseSystemView"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.CloseSystemView");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.KeyboardZoomIn1", GetOptionsDB().GetDefault<std::string>("HotKey.KeyboardZoomIn1"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.KeyboardZoomIn1");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.KeyboardZoomIn2", GetOptionsDB().GetDefault<std::string>("HotKey.KeyboardZoomIn2"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.KeyboardZoomIn2");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.KeyboardZoomOut1", GetOptionsDB().GetDefault<std::string>("HotKey.KeyboardZoomOut1"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.KeyboardZoomOut1");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.KeyboardZoomOut2", GetOptionsDB().GetDefault<std::string>("HotKey.KeyboardZoomOut2"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.KeyboardZoomOut2");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToHomeSystem", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToHomeSystem"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToHomeSystem");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToPrevOwnedSystem", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToPrevOwnedSystem"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToPrevOwnedSystem");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToNextOwnedSystem", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToNextOwnedSystem"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToNextOwnedSystem");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToPrevIdleFleet", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToPrevIdleFleet"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToPrevIdleFleet");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToNextIdleFleet", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToNextIdleFleet"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToNextIdleFleet");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToPrevFleet", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToPrevFleet"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToPrevFleet");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++
++    GetOptionsDB().Set<std::string>("HotKey.ZoomToNextFleet", GetOptionsDB().GetDefault<std::string>("HotKey.ZoomToNextFleet"));
++    hot_key_combo_default = ReadHotKeyFromDB("HotKey.ZoomToNextFleet");
++    ChangeHotKey(hot_key_combo_default.m_hot_key_name, hot_key_combo_default.m_key, hot_key_combo_default.m_default_modkeys, hot_key_combo_default.m_key_code_point);
++    
++}
+Index: UI/HotKeyManager.h
+===================================================================
+--- UI/HotKeyManager.h	(revision 0)
++++ UI/HotKeyManager.h	(revision 0)
+@@ -0,0 +1,66 @@
++// -*- C++ -*-
++//HotKeyManager.h
++#ifndef _HotKeyManager_h_
++#define _HotKeyManager_h_
++#include <../GG/GG/Base.h>
++#include <GG/WndEvent.h>
++#include <GG/GUI.h>
++#include "../../UI/MapWnd.h"
++#include "../../Boost/include/boost_1_47/boost/signals/connection.hpp"
++
++
++class HotKeyManager;
++
++/////////////////////////////////////////////
++// Free Functions
++/////////////////////////////////////////////
++
++struct HotKeyCombination
++{
++    HotKeyCombination(){}
++    HotKeyCombination(std::string hot_key_name, GG::Key key, GG::Flags<GG::ModKey> default_modkeys, boost::uint32_t key_code_point)
++                      : m_hot_key_name(hot_key_name), m_key(key), m_default_modkeys(default_modkeys), m_key_code_point(key_code_point)
++    {
++    }
++    std::string m_hot_key_name;
++    GG::Key m_key;
++    GG::Flags<GG::ModKey> m_default_modkeys;
++    boost::uint32_t m_key_code_point;
++};
++
++/** Hot Key Manager */
++class HotKeyManager
++{
++public:
++
++    static HotKeyManager* Instance();
++    void SetHotKeyAccelerator(const std::string& hot_key_name);
++    void ChangeHotKey(const std::string& hot_key_name, const GG::Key& key, const GG::Flags<GG::ModKey>& default_modkeys, const boost::uint32_t& key_code_point);
++    GG::GUI::AcceleratorSignalType& GetHotKeySignal(const std::string& hot_key_name);
++    void ConnectKeyboardAcceleratorSignals(MapWnd* map_window);        //!< connects signals from keyboard accelerators to various GUI responses
++    void SetAccelerators();                          //!< tells the GUI which keypress combinations to track and emit signals for when they occur
++    void RemoveAccelerators();                       //!< tells GUI to stop emitting signals for keypresses
++    std::string HotKeyToString(const std::string& hot_key_name);
++    HotKeyCombination ReadHotKeyFromDB(const std::string& hot_key_name);
++    void WriteHotKeyComboToDB(const HotKeyCombination& hot_key_combo);
++    bool IsModKey(const GG::Key& key);
++    std::string SpecialHotKeyToString(const HotKeyCombination& hot_key_combo, bool only_check_modkeys);
++    void ResetHotKeysToDefault();
++    void ActivateHotKeys(const std::string state_to_activate = "Default");
++    void DeactivateHotKeys(const std::string state_to_deactivate = "Default");
++private:
++    HotKeyManager();
++    HotKeyManager(const HotKeyManager&){};
++    HotKeyManager& operator=(const HotKeyManager&){};
++    static HotKeyManager* s_instance;
++    MapWnd* m_map_window;
++    bool m_map_window_ptr_set;
++    std::vector< std::pair<boost::signals::connection, std::string> > m_keyboard_accelerator_signals;
++    std::map< std::string, std::string > hot_keys_to_states;
++};
++
++
++
++
++
++#endif
+Index: UI/MapWnd.cpp
+===================================================================
+--- UI/MapWnd.cpp	(revision 4639)
++++ UI/MapWnd.cpp	(working copy)
+@@ -33,7 +33,7 @@
+ #include "../Empire/Empire.h"
+ #include "../network/Message.h"
+ #include "../client/human/HumanClientApp.h"
+-
++#include "HotKeyManager.h"
+ #include <boost/timer.hpp>
+ 
+ #include <GG/DrawUtil.h>
+@@ -44,6 +44,7 @@
+ #include <vector>
+ #include <deque>
+ 
++
+ namespace {
+     const double    ZOOM_STEP_SIZE = std::pow(2.0, 1.0/3.0);
+     const double    ZOOM_IN_MAX_STEPS = 9.0;
+@@ -89,6 +90,8 @@
+         boost::function<bool ()> m_fn;
+     };
+ 
++   
++
+     void AddOptions(OptionsDB& db) {
+         db.Add("UI.galaxy-gas-background",          "OPTIONS_DB_GALAXY_MAP_GAS",                    true,       Validator<bool>());
+         db.Add("UI.galaxy-starfields",              "OPTIONS_DB_GALAXY_MAP_STARFIELDS",             true,       Validator<bool>());
+@@ -126,6 +129,76 @@
+         db.Add("UI.tiny-fleet-button-minimum-zoom", "OPTIONS_DB_UI_TINY_FLEET_BUTTON_MIN_ZOOM",     0.75,       RangedStepValidator<double>(0.125, 0.125, 4.0));
+         db.Add("UI.small-fleet-button-minimum-zoom","OPTIONS_DB_UI_SMALL_FLEET_BUTTON_MIN_ZOOM",    1.50,       RangedStepValidator<double>(0.125, 0.125, 4.0));
+         db.Add("UI.medium-fleet-button-minimum-zoom","OPTIONS_DB_UI_MEDIUM_FLEET_BUTTON_MIN_ZOOM",  4.00,       RangedStepValidator<double>(0.125, 0.125, 4.0));
++
++        // Default Customizable Hot Keys
++        // 0 at end is code_point
++        db.Add("HotKeyOptions.use-default-bindings", "OPTIONS_DEFAULT_BINDINGS", true,  Validator<bool>());
++
++        db.Add<std::string>("HotKey.ReturnToMap",    "", "27 0");                                                 // Escape
++        db.Add<std::string>("HotKey.ReturnToMap.State", "", "Default");
++
++        db.Add<std::string>("HotKey.OpenChatWindow1", "", "271 0");                                               // Enter
++        db.Add<std::string>("HotKey.OpenChatWindow1.State", "", "Default");
++
++        db.Add<std::string>("HotKey.OpenChatWindow2", "", "13 0");                                                // Return
++        db.Add<std::string>("HotKey.OpenChatWindow2.State", "", "Default");
++
++        db.Add<std::string>("HotKey.EndTurn1",    "", "13 c 0");                                                  // Return Control
++        db.Add<std::string>("HotKey.EndTurn1.State", "", "Default");
++	
++        db.Add<std::string>("HotKey.EndTurn2",    "", "271 c 0");                                                 // Enter Control
++        db.Add<std::string>("HotKey.EndTurn2.State", "", "Default");
++      
++        db.Add<std::string>("HotKey.ToggleSitRep", "", "283 0");                                                  // F2
++        db.Add<std::string>("HotKey.ToggleSitRep.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ToggleResearch",    "", "284 0");                                             // F3
++        db.Add<std::string>("HotKey.ToggleResearch.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ToggleProduction", "", "285 0");                                              // F4
++        db.Add<std::string>("HotKey.ToggleProduction.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ToggleDesign",    "", "286 0");                                               // F5
++        db.Add<std::string>("HotKey.ToggleDesign.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ShowMenu", "", "291 0");                                                      // F10
++        db.Add<std::string>("HotKey.ShowMenu.State", "", "Default");
++
++        db.Add<std::string>("HotKey.CloseSystemView",    "", "115 0");                                            // s
++        db.Add<std::string>("HotKey.CloseSystemView.State", "", "Default");
++
++        db.Add<std::string>("HotKey.KeyboardZoomIn1", "", "101 0");                                               // e
++        db.Add<std::string>("HotKey.KeyboardZoomIn1.State", "", "Default");
++
++        db.Add<std::string>("HotKey.KeyboardZoomIn2", "", "270 0");                                               // +
++        db.Add<std::string>("HotKey.KeyboardZoomIn2.State", "", "Default");
++
++        db.Add<std::string>("HotKey.KeyboardZoomOut1",    "", "114 0");                                           // r
++        db.Add<std::string>("HotKey.KeyboardZoomOut1.State", "", "Default");
++
++        db.Add<std::string>("HotKey.KeyboardZoomOut2",    "", "269 0");                                           // - 
++        db.Add<std::string>("HotKey.KeyboardZoomOut2.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToHomeSystem", "", "100 0");                                              // d
++        db.Add<std::string>("HotKey.ZoomToHomeSystem.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToPrevOwnedSystem",    "", "120 0");                                      // x
++        db.Add<std::string>("HotKey.ZoomToPrevOwnedSystem.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToNextOwnedSystem", "", "99 0");                                          // c
++        db.Add<std::string>("HotKey.ZoomToNextOwnedSystem.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToPrevIdleFleet",    "", "102 0");                                        // f
++        db.Add<std::string>("HotKey.ZoomToPrevIdleFleet.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToNextIdleFleet", "", "103 0");                                           // g
++        db.Add<std::string>("HotKey.ZoomToNextIdleFleet.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToPrevFleet",    "", "118 0");                                            // v
++        db.Add<std::string>("HotKey.ZoomToPrevFleet.State", "", "Default");
++
++        db.Add<std::string>("HotKey.ZoomToNextFleet", "", "98 0");                                                //b
++        db.Add<std::string>("HotKey.ZoomToNextFleet.State", "", "Default");
+     }
+     bool temp_bool = RegisterOptions(&AddOptions);
+ 
+@@ -241,9 +314,10 @@
+     GG::X SidePanelWidth() {
+         return GG::X(GetOptionsDB().Get<int>("UI.sidepanel-width"));
+     }
+-}
+ 
+ 
++}
++   
+ ////////////////////////////////////////////////////////////
+ // MapWnd::MapScaleLine
+ ////////////////////////////////////////////////////////////
+@@ -525,7 +599,6 @@
+     m_fleet_buttons(),
+     m_fleet_state_change_signals(),
+     m_system_fleet_insert_remove_signals(),
+-    m_keyboard_accelerator_signals(),
+     m_fleet_lines(),
+     m_projected_fleet_lines(),
+     m_star_core_quad_vertices(),
+@@ -3668,9 +3741,10 @@
+     }
+     m_system_fleet_insert_remove_signals.clear();
+ 
+-    for (std::set<boost::signals::connection>::iterator it = m_keyboard_accelerator_signals.begin(); it != m_keyboard_accelerator_signals.end(); ++it)
++    /*for (std::set<boost::signals::connection>::iterator it = m_keyboard_accelerator_signals.begin(); it != m_keyboard_accelerator_signals.end(); ++it)
+         it->disconnect();
+-    m_keyboard_accelerator_signals.clear();
++    m_keyboard_accelerator_signals.clear();*/
++    RemoveAccelerators();
+ 
+     m_fleet_lines.clear();
+ 
+@@ -4456,148 +4530,30 @@
+ 
+ void MapWnd::ConnectKeyboardAcceleratorSignals()
+ {
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_ESCAPE),
+-                    &MapWnd::ReturnToMap, this));
+-
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_RETURN),
+-                    &MapWnd::OpenChatWindow, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_KP_ENTER),
+-                    &MapWnd::OpenChatWindow, this));
+-
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_RETURN,   GG::MOD_KEY_CTRL),
+-                    &MapWnd::EndTurn, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_KP_ENTER, GG::MOD_KEY_CTRL),
+-                    &MapWnd::EndTurn, this));
+-
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_F2),
+-                    &MapWnd::ToggleSitRep, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_F3),
+-                    &MapWnd::ToggleResearch, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_F4),
+-                    &MapWnd::ToggleProduction, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_F5),
+-                    &MapWnd::ToggleDesign, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_F10),
+-                    &MapWnd::ShowMenu, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_s),
+-                    &MapWnd::CloseSystemView, this));
+-
+-    // Keys for zooming
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_e),
+-                    &MapWnd::KeyboardZoomIn, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_KP_PLUS),
+-                    &MapWnd::KeyboardZoomIn, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_r),
+-                    &MapWnd::KeyboardZoomOut, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_KP_MINUS),
+-                    &MapWnd::KeyboardZoomOut, this));
+-
+-    // Keys for showing systems
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_d),
+-                    &MapWnd::ZoomToHomeSystem, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_x),
+-                    &MapWnd::ZoomToPrevOwnedSystem, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_c),
+-                    &MapWnd::ZoomToNextOwnedSystem, this));
+-
+-    // Keys for showing fleets
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_f),
+-                    &MapWnd::ZoomToPrevIdleFleet, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_g),
+-                    &MapWnd::ZoomToNextIdleFleet, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_v),
+-                    &MapWnd::ZoomToPrevFleet, this));
+-    m_keyboard_accelerator_signals.insert(
+-        GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_b),
+-                    &MapWnd::ZoomToNextFleet, this));
+-
++    HotKeyManager::Instance()->ConnectKeyboardAcceleratorSignals(this);
++    /*
+ #ifndef FREEORION_RELEASE
+     // Previously-used but presently ignored development-only key combo for dumping
+     // ValueRef, Condition, and Effect regression tests using the current Universe
+     m_keyboard_accelerator_signals.insert(
+         GG::Connect(GG::GUI::GetGUI()->AcceleratorSignal(GG::GGK_r, GG::MOD_KEY_CTRL),
+                     &RequestRegressionTestDump));
+-#endif
++#endif*/
+ }
+ 
+ void MapWnd::SetAccelerators()
+ {
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_ESCAPE);
+-
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_RETURN);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_KP_ENTER);
+-
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_RETURN, GG::MOD_KEY_CTRL);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_KP_ENTER, GG::MOD_KEY_CTRL);
+-
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_F2);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_F3);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_F4);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_F5);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_F10);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_s);
+-
+-    // Keys for zooming
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_e);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_r);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_KP_PLUS);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_KP_MINUS);
+-
+-    // Keys for showing systems
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_d);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_x);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_c);
+-
+-    // Keys for showing fleets
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_f);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_g);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_v);
+-    GG::GUI::GetGUI()->SetAccelerator(GG::GGK_b);
+-
++   HotKeyManager::Instance()->SetAccelerators();
+ #ifndef FREEORION_RELEASE
+     GG::GUI::GetGUI()->SetAccelerator(GG::GGK_r, GG::MOD_KEY_CTRL);
+ #endif
+-
+     ConnectKeyboardAcceleratorSignals();
+ }
+ 
+ void MapWnd::RemoveAccelerators()
+ {
+-    GG::GUI::accel_iterator i = GG::GUI::GetGUI()->accel_begin();
+-    while (i != GG::GUI::GetGUI()->accel_end()) {
+-        GG::GUI::GetGUI()->RemoveAccelerator(i);
+-        i = GG::GUI::GetGUI()->accel_begin();
+-    }
++    HotKeyManager::Instance()->RemoveAccelerators();
+     m_disabled_accels_list.clear();
+-
+-    for (std::set<boost::signals::connection>::iterator it =
+-             m_keyboard_accelerator_signals.begin();
+-         it != m_keyboard_accelerator_signals.end();
+-         ++it) {
+-        it->disconnect();
+-    }
+-    m_keyboard_accelerator_signals.clear();
+ }
+ 
+ void MapWnd::DisableAlphaNumAccels()
+Index: UI/MapWnd.h
+===================================================================
+--- UI/MapWnd.h	(revision 4639)
++++ UI/MapWnd.h	(working copy)
+@@ -165,7 +165,10 @@
+     void            Cleanup();                                      //!< cleans up the MapWnd at the end of a turn (ie, closes all windows and disables all keyboard accelerators)
+     void            Sanitize();                                     //!< sanitizes the MapWnd after a game
+     //!@}
++    friend class HotKeyManager;
+ 
++
++
+ protected:
+     virtual bool    EventFilter(GG::Wnd* w, const GG::WndEvent& event);
+ 
+@@ -311,6 +314,7 @@
+     bool            ZoomToPrevFleet();
+     bool            ZoomToNextFleet();
+ 
++
+     void            ConnectKeyboardAcceleratorSignals();        //!< connects signals from keyboard accelerators to various GUI responses
+     void            SetAccelerators();                          //!< tells the GUI which keypress combinations to track and emit signals for when they occur
+     void            RemoveAccelerators();                       //!< tells GUI to stop emitting signals for keypresses
+@@ -363,8 +367,6 @@
+     std::map<int, boost::signals::connection>               m_fleet_state_change_signals;
+     std::map<int, std::vector<boost::signals::connection> > m_system_fleet_insert_remove_signals;
+ 
+-    std::set<boost::signals::connection>            m_keyboard_accelerator_signals;         //!< signals connecting keyboard accelerators to GUI responses
+-
+     std::map<int, MovementLineData>                 m_fleet_lines;                          //!< lines used for moving fleets in the main map
+     std::map<int, MovementLineData>                 m_projected_fleet_lines;                //!< lines that show the projected path of the active fleet in the FleetWnd
+ 
+Index: UI/OptionsWnd.cpp
+===================================================================
+--- UI/OptionsWnd.cpp	(revision 4639)
++++ UI/OptionsWnd.cpp	(working copy)
+@@ -8,6 +8,7 @@
+ #include "CUISpin.h"
+ #include "CUISlider.h"
+ #include "Sound.h"
++#include "HotKeyManager.h"
+ 
+ #include <OgreRoot.h>
+ #include <OgreRenderSystem.h>
+@@ -16,7 +17,11 @@
+ #include <GG/Layout.h>
+ #include <GG/TabWnd.h>
+ #include <GG/dialogs/ThreeButtonDlg.h>
++#include <GG/Font.h>
+ 
++#include <functional>
++#include <algorithm>
++
+ #include <boost/cast.hpp>
+ #include <boost/format.hpp>
+ #include <boost/spirit/include/classic.hpp>
+@@ -74,6 +79,11 @@
+         virtual void Render() {}
+     };
+ 
++
++
++
++
++
+     struct BrowseForPathButtonFunctor
+     {
+         BrowseForPathButtonFunctor(const fs::path& path, const std::vector<std::pair<std::string, std::string> >& filters,
+@@ -260,6 +270,62 @@
+     };
+ }
+ 
++std::vector< std::pair< std::string, CUIButton*> > OptionsWnd::hk_to_button;
++
++class ConfigureHotKeyModalWnd : public CUIWnd
++{
++public:
++    ConfigureHotKeyModalWnd(const std::string& hot_key_name, CUIButton* button);
++    ~ConfigureHotKeyModalWnd(){}
++    virtual void KeyPress (GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys);
++    virtual void MouseLeave();
++
++    static void ResetHotKeys();
++    
++private:
++    const std::string& m_hot_key_name;
++    CUIButton* m_button;
++};
++
++ConfigureHotKeyModalWnd::ConfigureHotKeyModalWnd(const std::string& hot_key_name, CUIButton* button) 
++       : CUIWnd("HOT KEY CONFIGURATION", GG::X(80), GG::Y(130), GG::X(600), GG::Y(500), (GG::INTERACTIVE | GG::MODAL)), m_hot_key_name(hot_key_name), m_button(button)
++{
++    boost::shared_ptr<GG::StyleFactory> style = GetStyleFactory();
++    boost::shared_ptr<GG::Font> font = style->DefaultFont();
++    GG::TextControl* message_text = style->NewTextControl(GG::X(80), GG::Y(130), UserString("OPTIONS_HK_MODAL_WND"), font, GG::CLR_WHITE,
++                                                      GG::FORMAT_LEFT | GG::FORMAT_VCENTER);
++
++    message_text->SetMinSize(true);
++    AttachChild(message_text);
++}
++
++void ConfigureHotKeyModalWnd::KeyPress (GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys)
++{
++    std::string hot_key_string;
++
++    if (!HotKeyManager::Instance()->IsModKey(key)) {
++        HotKeyManager::Instance()->ChangeHotKey(m_hot_key_name, key, mod_keys, key_code_point);
++        m_button->SetText(HotKeyManager::Instance()->HotKeyToString(m_hot_key_name));
++        m_done = true;
++    }
++}
++
++void ConfigureHotKeyModalWnd::MouseLeave()
++{
++    m_done = true;
++}
++
++void ConfigureHotKeyModalWnd::ResetHotKeys()
++{
++    std::vector< std::pair< std::string, CUIButton*> >::iterator it = OptionsWnd::hk_to_button.begin();
++
++    for(; it != OptionsWnd::hk_to_button.end(); ++it)
++    {
++        it->second->SetText(HotKeyManager::Instance()->HotKeyToString(it->first));
++    }
++
++}
++
+ OptionsWnd::OptionsWnd():
+     CUIWnd(UserString("OPTIONS_TITLE"),
+            (GG::GUI::GetGUI()->AppWidth() - (PAGE_WIDTH + 20)) / 2,
+@@ -313,6 +379,46 @@
+     --m_indentation_level;
+ }
+ 
++void OptionsWnd::CreateHotKeyModalWnd(const std::string& hot_key_name, CUIButton* button)
++{
++    if( hot_key_name == "reset_to_defaults" ) {
++        HotKeyManager::Instance()->ResetHotKeysToDefault();
++        ConfigureHotKeyModalWnd::ResetHotKeys();
++    }
++    else {
++        ConfigureHotKeyModalWnd wnd(hot_key_name, button);
++        wnd.Run();
++    }
++}
++
++CUIButton* OptionsWnd::HotKeyModalWndButton(const std::string& hot_key_control_text, const std::string& hot_key_name)
++{
++    std::string hot_key_button_text;
++
++    if (hot_key_name == "reset_to_defaults")
++        hot_key_button_text = UserString("OPTIONS_HK_RESET_ALL");
++    else
++        hot_key_button_text = HotKeyManager::Instance()->HotKeyToString(hot_key_name);
++    
++
++    GG::ListBox::Row* row = new GG::ListBox::Row();
++    CUIButton* button = new CUIButton(GG::X(15), PAGE_HEIGHT + 17, GG::X(50), hot_key_button_text);
++
++    if (!(hot_key_button_text == UserString("OPTIONS_HK_RESET_ALL")))
++         OptionsWnd::hk_to_button.push_back( std::make_pair(hot_key_name, button) );
++    button->Resize(button->MinUsableSize());
++
++    GG::TextControl* text_control = new GG::TextControl(GG::X0, GG::Y0, hot_key_control_text, boost::shared_ptr<GG::Font>(new GG::Font(ClientUI::GetFont()->FontName(), 10)), ClientUI::TextColor(), GG::FORMAT_LEFT, GG::INTERACTIVE);
++    GG::Layout* layout = new GG::Layout(GG::X0, GG::Y0, GG::X1, GG::Y1, 1, 2, 0, 5);
++    layout->Add(text_control, 0, 0);
++    layout->Add(button, 0, 1);
++    row->Resize(GG::Pt(ROW_WIDTH, std::max(text_control->MinUsableSize().y, button->MinUsableSize().y) + 6));
++    row->push_back(new RowContentsWnd(row->Width(), row->Height(), layout, m_indentation_level));
++    m_current_option_list->Insert(row);
++    button->ClickedSignal.connect(boost::bind(&OptionsWnd::CreateHotKeyModalWnd, this, hot_key_name, button));
++    return button;
++}
++
+ CUIStateButton* OptionsWnd::BoolOption(const std::string& option_name, const std::string& text)
+ {
+     GG::ListBox::Row* row = new GG::ListBox::Row();
+@@ -766,6 +872,38 @@
+     EndSection();
+     EndPage();
+ 
++     // HotKey settings tab
++    BeginPage(UserString("OPTIONS_PAGE_HOTKEY"));
++    BeginSection(UserString("OPTIONS_BINDINGS"));
++
++
++    HotKeyModalWndButton(UserString("OPTIONS_HK_RETURN_TO_MAP"), "HotKey.ReturnToMap");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_OPEN_CHAT_1"), "HotKey.OpenChatWindow1");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_OPEN_CHAT_2"), "HotKey.OpenChatWindow2");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_END_TURN_1"), "HotKey.EndTurn1");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_END_TURN_2"), "HotKey.EndTurn2");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_TOGGLE_SITREP"), "HotKey.ToggleSitRep");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_TOGGLE_RESEARCH_WND"), "HotKey.ToggleResearch");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_TOGGLE_PRODUCTION_WND"), "HotKey.ToggleProduction");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_TOGGLE_DESIGN_WND"), "HotKey.ToggleDesign");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_SHOW_MENU"), "HotKey.ShowMenu");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_CLOSE_SYSTEM_VIEW"), "HotKey.CloseSystemView");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_KEYBOARD_ZOOMIN_1"), "HotKey.KeyboardZoomIn1");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_KEYBOARD_ZOOMIN_2"), "HotKey.KeyboardZoomIn2");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_KEYBOARD_ZOOMOUT_1"), "HotKey.KeyboardZoomOut1");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_KEYBOARD_ZOOMOUT_2"), "HotKey.KeyboardZoomOut2");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_HOMESYS"), "HotKey.ZoomToHomeSystem");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_PREV_OWNEDSYS"), "HotKey.ZoomToPrevOwnedSystem");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_NEXT_OWNEDSYS"), "HotKey.ZoomToNextOwnedSystem");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_PREV_IDLE_FLEET"), "HotKey.ZoomToPrevIdleFleet");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_NEXT_IDLE_FLEET"), "HotKey.ZoomToNextIdleFleet");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_PREV_FLEET"), "HotKey.ZoomToPrevFleet");
++    HotKeyModalWndButton(UserString("OPTIONS_HK_ZOOM_TO_NEXT_FLEET"), "HotKey.ZoomToNextFleet");
++    HotKeyModalWndButton(UserString("OPTIONS_DEFAULT_BINDINGS"), "reset_to_defaults");
++
++    EndSection();
++    EndPage();
++
+     // Galaxy Map Page
+     BeginPage(UserString("OPTIONS_GALAXY_MAP"));
+     BeginSection(UserString("OPTIONS_SYSTEM_ICONS"));
+@@ -866,7 +1004,7 @@
+     DirectoryOption("resource-dir",                 UserString("OPTIONS_FOLDER_SETTINGS"),  GetRootDataDir());  // GetRootDataDir() returns the default browse path when modifying this directory option.  the actual default directory (before modifying) is gotten from the specified option name "resource-dir"
+     DirectoryOption("save-dir",                     UserString("OPTIONS_FOLDER_SAVE"),      GetUserDir());
+     EndPage();
+-
++    
+     // Connect the done and cancel button
+     GG::Connect(m_done_button->ClickedSignal, &OptionsWnd::DoneClicked, this);
+ }
+@@ -921,3 +1059,4 @@
+     Sound::GetSound().SetUISoundsVolume(pos);
+     Sound::GetSound().PlaySound(GetOptionsDB().Get<std::string>("UI.sound.button-click"), true);
+ }
++
+Index: UI/OptionsWnd.h
+===================================================================
+--- UI/OptionsWnd.h	(revision 4639)
++++ UI/OptionsWnd.h	(working copy)
+@@ -38,7 +38,8 @@
+     //!@{
+     virtual void KeyPress (GG::Key key, boost::uint32_t key_code_point, GG::Flags<GG::ModKey> mod_keys);
+     //!@}
+-
++    void                CreateHotKeyModalWnd(const std::string& hot_key_name, CUIButton* button);
++    static std::vector< std::pair< std::string, CUIButton*> > hk_to_button;
+ private:
+     typedef void (OptionsWnd::* VolumeSliderHandler)(int, int, int);
+ 
+@@ -46,6 +47,8 @@
+     void                EndPage();
+     void                BeginSection(const std::string& name);
+     void                EndSection();
++  
++    CUIButton*          HotKeyModalWndButton(const std::string& hot_key_control_text, const std::string& hot_key_name);
+     CUIStateButton*     BoolOption(const std::string& option_name, const std::string& text);
+     CUISpin<int>*       IntOption(const std::string& option_name, const std::string& text);
+     CUISpin<double>*    DoubleOption(const std::string& option_name, const std::string& text);
+@@ -63,6 +66,7 @@
+     void                ResolutionOption();
+ 
+     void                Init();
++
+     void                DoneClicked();
+     void                MusicClicked(bool checked);
+     void                MusicVolumeSlid(int pos, int low, int high);
